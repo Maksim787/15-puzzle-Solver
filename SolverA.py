@@ -20,9 +20,6 @@ class Solver:
                        1, 1, 1, 1,
                        1, 1, 1, 1,
                        1, 1, 1, 0]
-        if SIZE > 4:
-            self.scores = [1] * (SIZE * SIZE)  # list(range(SIZE * SIZE - 1, -1, -1))
-            self.penalty_dist = [i * 10 for i in range(0, 2 * SIZE - 1)]
         # Данные score и dist_penalty для SIZE = 4 дают:
         # Average steps: 63.5
         # Min steps: 50
@@ -32,6 +29,11 @@ class Solver:
         # *эффективность измеряется в процентах разобранных перестановок от числа всех перестановок
 
         # ----------------------------
+        # self.penalty_dist = [0, 1, 3, 5, 7, 9, 11]
+        # self.scores = [1, 1, 1, 1,
+        #                1, 1, 1, 1,
+        #                1, 1, 1, 1,
+        #                1, 1, 1, 0]
         # Незначительно, на ~5 ходов лучше, но дольше:
         # Average steps: 57.5
         # Min steps: 46
@@ -39,12 +41,16 @@ class Solver:
         # Sample steps: [46, 48, 50, 50, 55, 59, 62, 67, 69, 69]
         # Sample efficiency: 0.00000003% 0.00000006% 0.00000009% 0.00000010% 0.00000048% 0.00000129% 0.00000153% 0.00000170% 0.00000177% 0.00000788%
         #
-        # self.penalty_dist = [0, 1, 3, 5, 7, 9, 11]
-        # self.scores = [1, 1, 1, 1,
-        #                1, 1, 1, 1,
-        #                1, 1, 1, 1,
-        #                1, 1, 1, 0]
         # ----------------------------
+        if SIZE > 4:
+            self.scores = [1] * (SIZE * SIZE)
+            self.scores[-1] = 0
+            self.penalty_dist = [i * 10 for i in range(2 * SIZE - 1)]
+        if SIZE < 3:
+            self.scores = [1] * (SIZE * SIZE)
+            self.scores[-1] = 0
+            self.penalty_dist = [1] * (2 * SIZE - 1)
+            self.penalty_dist[0] = 0
 
     # установка размера головоломки
     def SetSize(self, new_size):
@@ -106,10 +112,7 @@ class Solver:
         # попробовать свой счёт
         # return self.CustomScore(board)
         # return self.RealManhattanScore(board)
-        if self.SIZE <= 3:
-            # Манхеттенское расстояние от каждой клетки до её реальной позиции, не включающее позицию пустой клетки -
-            # находит гарантированно оптимальное решение, но работает долго
-            return self.RealManhattanScore(board)
+
         # для каждой клетки считается её манхеттенское расстояние до правильной позиции, пусть оно равно man_dist
         # к счёту прибавляется penalty_dist[man_dist] * scores[number]
         dist = 0
@@ -119,21 +122,6 @@ class Solver:
             pos = ind // self.SIZE, ind % self.SIZE
             man_dist = abs(true_pos[0] - pos[0]) + abs(true_pos[1] - pos[1])
             dist += self.penalty_dist[man_dist] * self.scores[number]
-        return dist
-
-    # Манхеттенское расстояние от каждой клетки до её реальной позиции, не включающее позицию пустой клетки
-    def RealManhattanScore(self, board):
-        dist = 0
-        for ind in range(self.SIZE * self.SIZE):
-            if board[ind] == self.EMPTY:
-                continue
-            # нужная позиция
-            true_pos = board[ind] // self.SIZE, board[ind] % self.SIZE
-            # реальная позиция
-            pos = ind // self.SIZE, ind % self.SIZE
-            # Манхеттенское расстояние
-            man_dist = abs(true_pos[0] - pos[0]) + abs(true_pos[1] - pos[1])
-            dist += man_dist
         return dist
 
     # переопределение своего расстояния
