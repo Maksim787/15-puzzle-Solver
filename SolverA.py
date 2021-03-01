@@ -20,28 +20,6 @@ class Solver:
                        1, 1, 1, 1,
                        1, 1, 1, 1,
                        1, 1, 1, 0]
-        # Данные score и dist_penalty для SIZE = 4 дают:
-        # Average steps: 63.5
-        # Min steps: 50
-        # Max steps: 75
-        # Sample steps: [50, 52, 54, 56, 63, 63, 73, 74, 75, 75]
-        # Sample efficiency: 0.00000002% 0.00000007% 0.00000012% 0.00000020% 0.00000020% 0.00000023% 0.00000039% 0.00000058% 0.00000082% 0.00000189%
-        # *эффективность измеряется в процентах разобранных перестановок от числа всех перестановок
-
-        # ----------------------------
-        # self.penalty_dist = [0, 1, 3, 5, 7, 9, 11]
-        # self.scores = [1, 1, 1, 1,
-        #                1, 1, 1, 1,
-        #                1, 1, 1, 1,
-        #                1, 1, 1, 0]
-        # Незначительно, на ~5 ходов лучше, но дольше:
-        # Average steps: 57.5
-        # Min steps: 46
-        # Max steps: 69
-        # Sample steps: [46, 48, 50, 50, 55, 59, 62, 67, 69, 69]
-        # Sample efficiency: 0.00000003% 0.00000006% 0.00000009% 0.00000010% 0.00000048% 0.00000129% 0.00000153% 0.00000170% 0.00000177% 0.00000788%
-        #
-        # ----------------------------
         if SIZE > 4:
             self.scores = [1] * (SIZE * SIZE)
             self.scores[-1] = 0
@@ -147,7 +125,7 @@ class Solver:
 
     # Число рассмотренных комбинаций / общее число возможных комбинаций
     def GetEfficiency(self):
-        return self.USED_SIZE * 2 / math.factorial(self.SIZE * self.SIZE)
+        return self.USED_SIZE
 
     # печать доски вместе со счётом
     def PrintBoard(self, board):
@@ -215,8 +193,8 @@ class Solver:
                 if show_first_res and h < h_min:
                     h_min = h
                     self.USED_SIZE = len(used)
-                    # процент рассмотренных досок
-                    print("Tried: {eff:.8f}%".format(eff=self.GetEfficiency() * 100))
+                    # число рассмотренных досок
+                    print("Used: {eff} boards".format(eff=self.GetEfficiency()))
                     self.PrintBoard(next_board)
                 # вывод ответа
                 if h == 0:

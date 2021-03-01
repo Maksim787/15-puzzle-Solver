@@ -14,20 +14,20 @@ def test_size(size, n_times, show_steps=False, show_first_res=False):
         task = solver.GetRandomBoard()
         steps = solver.Solve(task, show_first_res=show_first_res)
         print("{i}: {len} steps".format(i=i, len=len(steps)))
-        print("{i}: {eff:.8f}% efficiency".format(i=i, eff=solver.GetEfficiency() * 100))
+        print("{i}: {eff} efficiency".format(i=i, eff=solver.GetEfficiency()))
         if show_steps:
             print("Steps:")
             solver.PrintSteps(steps)
         print()
         total_steps.append(len(steps))
-        efficiency.append(solver.GetEfficiency() * 100)
+        efficiency.append(solver.GetEfficiency())
     total_steps.sort()
     efficiency.sort()
     print("Average steps:", sum(total_steps) / len(total_steps))
     print("Min steps:", min(total_steps))
     print("Max steps:", max(total_steps))
     print("Sample steps:", total_steps)
-    print("Sample efficiency:", *["{eff:.8f}%".format(eff=i) for i in efficiency])
+    print("Sample efficiency:", efficiency)
     print()
 
 
@@ -38,7 +38,7 @@ def test_board(task, show_steps=False, show_first_res=False):
     solver = Solver(round(math.sqrt(len(task))))
     steps = solver.Solve(task, show_first_res=show_first_res)
     print("{len} steps".format(len=len(steps)))
-    print("{eff:.8f}% efficiency".format(eff=solver.GetEfficiency() * 100))
+    print("{eff} efficiency".format(eff=solver.GetEfficiency()))
     if show_steps:
         print("Steps:")
         solver.PrintSteps(steps)
@@ -52,7 +52,7 @@ def test_random_board(size, show_steps=False, show_first_res=False):
     task = solver.GetRandomBoard()
     steps = solver.Solve(task, show_first_res=show_first_res)
     print("{len} steps".format(len=len(steps)))
-    print("{eff:.12f}% efficiency".format(eff=solver.GetEfficiency() * 100))
+    print("{eff} efficiency".format(eff=solver.GetEfficiency()))
     if show_steps:
         print("Steps:")
         solver.PrintSteps(steps)
