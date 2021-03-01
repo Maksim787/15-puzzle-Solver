@@ -29,9 +29,9 @@ scores = [1, 1, 1, 1,
 Для досок размера >= 5 используются следующие параметры:
 
 ```python
-scores = [1] * (SIZE * SIZE)  # list(range(SIZE * SIZE - 1, -1, -1))
+scores = [1] * (SIZE * SIZE)
 scores[-1] = 0
-penalty_dist = [i * 10 for i in range(0, 2 * SIZE - 1)]
+penalty_dist = [i * 10 for i in range(2 * SIZE - 1)]
 ```
 Т. е. за все клетки штрафуем одинаково. За расстояние S штрафуем 10 * S.
 
