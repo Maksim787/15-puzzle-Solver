@@ -1,6 +1,5 @@
 from heapq import *
 import random
-import math
 
 
 class Solver:
@@ -24,11 +23,10 @@ class Solver:
             self.scores = [1] * (SIZE * SIZE)
             self.scores[-1] = 0
             self.penalty_dist = [i * 10 for i in range(2 * SIZE - 1)]
-        if SIZE < 3:
+        if SIZE <= 3:
             self.scores = [1] * (SIZE * SIZE)
             self.scores[-1] = 0
-            self.penalty_dist = [1] * (2 * SIZE - 1)
-            self.penalty_dist[0] = 0
+            self.penalty_dist = list(range(2 * SIZE - 1))
 
     # установка размера головоломки
     def SetSize(self, new_size):
@@ -86,10 +84,9 @@ class Solver:
         return tuple(board_list)
 
     # Получение эвристики
-    def GetScore(self, board):
+    def GetHeuristic(self, board):
         # попробовать свой счёт
-        # return self.CustomScore(board)
-        # return self.RealManhattanScore(board)
+        # return self.CustomHeuristic(board)
 
         # для каждой клетки считается её манхеттенское расстояние до правильной позиции, пусть оно равно man_dist
         # к счёту прибавляется penalty_dist[man_dist] * scores[number]
@@ -103,7 +100,7 @@ class Solver:
         return dist
 
     # переопределение своего расстояния
-    def CustomScore(self, board):
+    def CustomHeuristic(self, board):
         dist = 0
         for ind in range(self.SIZE * self.SIZE):
             if board[ind] == self.EMPTY:
@@ -123,14 +120,14 @@ class Solver:
         board_path.reverse()
         return board_path
 
-    # Число рассмотренных комбинаций / общее число возможных комбинаций
+    # число рассмотренных комбинаций / общее число возможных комбинаций
     def GetEfficiency(self):
         return self.USED_SIZE
 
     # печать доски вместе со счётом
     def PrintBoard(self, board):
         print("-" * 10)
-        print("Score:", self.GetScore(board))
+        print("Score:", self.GetHeuristic(board))
         for col_ind in range(self.SIZE):
             for row_ind in range(self.SIZE):
                 num = board[col_ind * self.SIZE + row_ind]
@@ -152,24 +149,22 @@ class Solver:
     def Solve(self, board, show_first_res=False):
         board = tuple(board)
         # уже решена
-        if self.GetScore(board) == 0:
+        if self.GetHeuristic(board) == 0:
             return [board]
         # не может быть решена
         if not self.CanSolve(board):
             return []
-        # куча с (f = g + h, h, task), где g - число сделанных ходов, h - значение эвристики, task - массив доски
-        heap = []  # (f, g, task)
-        # использованные доски
-        used = set()
+        # куча с (f = g + h, task), где g - число сделанных ходов, h - значение эвристики, task - массив доски
+        heap = []  # (f, task)
+        # min_g у использованных досок
+        g_score = {}
         # словарь для восстановления пути
         prev_board = {}
-        # учитываем первую доску
+
         heappush(heap,
-                 (self.GetScore(board),
-                  0,
-                  board)
-                 )
-        used.add(board)
+                 (self.GetHeuristic(board),
+                  board))
+        g_score[board] = 0
         prev_board[board] = None
 
         # текущий минимум эвристики
@@ -177,31 +172,26 @@ class Solver:
 
         while True:
             # берём доску с наименьшей f = g + h
-            f, g, board = heappop(heap)
+            f, board = heappop(heap)
             # перебираем возможные ходы
             for turn in self.PossibleTurns(board):
-                # делаем ход
                 next_board = self.MakeTurn(board, turn)
-                # если он уже был в рассмотрении, пропускаем
-                if next_board in used:
-                    continue
-                # обрабатываем next_board
-                used.add(next_board)
-                prev_board[next_board] = board
-                h = self.GetScore(next_board)
-                # печать промежуточных результатов
-                if show_first_res and h < h_min:
-                    h_min = h
-                    self.USED_SIZE = len(used)
-                    # число рассмотренных досок
-                    print("Used: {eff} boards".format(eff=self.GetEfficiency()))
-                    self.PrintBoard(next_board)
-                # вывод ответа
-                if h == 0:
-                    self.USED_SIZE = len(used)
-                    return self.GetOptimalPath(prev_board, next_board)
-                heappush(heap,
-                         (g + 1 + h,
-                          g + 1,
-                          next_board)
-                         )
+                g = g_score[board] + 1
+                # если он не был в рассмотрении или мы нашли более близкое расстояние
+                if next_board not in g_score or g < g_score[next_board]:
+                    g_score[next_board] = g
+                    prev_board[next_board] = board
+                    h = self.GetHeuristic(next_board)
+                    heappush(heap,
+                             (g + h, next_board))
+                    # печать промежуточных результатов
+                    if show_first_res and h < h_min:
+                        h_min = h
+                        self.USED_SIZE = len(g_score)
+                        # число рассмотренных досок
+                        print("Рассмотрено: {eff} расстановок".format(eff=self.GetEfficiency()))
+                        print("Длина пути к этой расстановке:", g_score[next_board])
+                        self.PrintBoard(next_board)
+                    if h == 0:
+                        self.USED_SIZE = len(g_score)
+                        return self.GetOptimalPath(prev_board, next_board)
